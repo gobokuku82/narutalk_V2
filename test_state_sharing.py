@@ -3,7 +3,9 @@ Test script to verify State-based information sharing between agents
 """
 import asyncio
 import json
-from backend.src.api.app import sales_app
+import sys
+sys.path.append('.')
+from backend.src.core.graph import create_sales_support_graph
 from loguru import logger
 
 async def test_state_sharing():
@@ -20,10 +22,28 @@ async def test_state_sharing():
     
     thread_id = "test_state_sharing_001"
     
+    # Create the graph
+    sales_app = create_sales_support_graph(use_sqlite=False)
+    
     try:
         # Process the query
         print("\nProcessing query through multi-agent system...")
-        async for output in sales_app.stream_request(test_query, thread_id):
+        from langchain_core.messages import HumanMessage
+        
+        initial_state = {
+            "messages": [HumanMessage(content=test_query)],
+            "current_agent": "supervisor",
+            "task_type": "analyze",
+            "progress": [],
+            "context": {},
+            "metadata": {},
+            "task_description": test_query,
+            "results": {},
+            "errors": [],
+            "is_complete": False
+        }
+        
+        async for output in sales_app.astream(initial_state, {"configurable": {"thread_id": thread_id}}):
             for node_name, node_output in output.items():
                 print(f"\n[{node_name}] Agent executing...")
                 
@@ -66,7 +86,7 @@ async def test_state_sharing():
         print("="*50)
         
     except Exception as e:
-        print(f"\n❌ Error during test: {str(e)}")
+        print(f"\nError during test: {str(e)}")
         logger.error(f"Test failed: {e}")
 
 if __name__ == "__main__":
