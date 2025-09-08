@@ -8,9 +8,6 @@ from datetime import datetime
 import json
 from loguru import logger
 
-# Import the global app instance
-from .app import sales_app
-
 router = APIRouter()
 
 # Request/Response models

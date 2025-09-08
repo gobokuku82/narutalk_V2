@@ -566,3 +566,5 @@ async def seed_additional_data(count: int = Query(5, ge=1, le=50)):
     logger.info(f"Seeded additional data: {count} customers, {count*2} sales")
     
     return {"message": f"Seeded {count} customers and {count*2} sales", "stats": stats}
+# Export router with correct name
+mock_db_router = router

@@ -1,4 +1,4 @@
-from .app import app
+from .app import app, sales_app
 from .routes import router
 
-__all__ = ["app", "router"]
+__all__ = ["app", "router", "sales_app"]

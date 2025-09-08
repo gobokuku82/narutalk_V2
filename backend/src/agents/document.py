@@ -1,6 +1,6 @@
 """
 Enhanced Document Agent for LangGraph 0.6.6
-Natural language parsing, ChromaDB integration, and auto-routing to compliance
+Natural language parsing and document generation
 Following rules.md: Node functions MUST return dict
 """
 from typing import Dict, Any
@@ -16,22 +16,15 @@ from ..tools.document_tools import (
     natural_language_to_document,
     create_visit_report,
     create_product_demo_request,
-    create_product_demo_report,
     create_sample_request,
-    generate_business_proposal,
-    generate_meeting_notes,
-    generate_compliance_report,
-    save_document_to_db,
-    query_documents,
-    update_document_status
+    create_general_document
 )
 
 
 def document_agent(state: AgentState) -> dict:
     """
-    Enhanced Document Agent with natural language parsing and DB storage
+    Enhanced Document Agent with natural language parsing
     Following rules.md: Node functions MUST return dict
-    Uses StateGraph pattern with tool integration
     Auto-routes to compliance when document is completed
     """
     # Initialize LLM with tools binding
@@ -41,14 +34,8 @@ def document_agent(state: AgentState) -> dict:
         natural_language_to_document,
         create_visit_report,
         create_product_demo_request,
-        create_product_demo_report,
         create_sample_request,
-        generate_business_proposal,
-        generate_meeting_notes,
-        generate_compliance_report,
-        save_document_to_db,
-        query_documents,
-        update_document_status
+        create_general_document
     ]
     llm_with_tools = llm.bind_tools(tools)
     
@@ -62,7 +49,7 @@ def document_agent(state: AgentState) -> dict:
     progress_update = {
         "agent": "document",
         "timestamp": datetime.now().isoformat(),
-        "action": "processing_natural_language"
+        "action": "generating_document"
     }
     
     logger.info(f"Document agent processing: {task_description[:100]}...")
@@ -92,35 +79,28 @@ def document_agent(state: AgentState) -> dict:
             # Use traditional document generation based on context
             if "proposal" in task_description.lower() or "제안서" in task_description:
                 doc_type = "proposal"
-                result = generate_business_proposal.invoke({
-                    "client_name": context.get("client_name", "Client"),
-                    "product_info": context.get("product_info", "Our solutions"),
-                    "pricing": context.get("pricing", "Custom pricing"),
-                    "terms": context.get("terms", "Standard terms"),
-                    "benefits": context.get("benefits", "Key benefits")
-                })
-                document_data = json.loads(result)
+                document_data = {
+                    "document_type": "proposal",
+                    "content": {
+                        "client_name": context.get("client_name", "Client"),
+                        "product_info": context.get("product_info", "Our solutions"),
+                        "pricing": context.get("pricing", "Custom pricing"),
+                        "terms": context.get("terms", "Standard terms")
+                    }
+                }
                 
             elif "meeting" in task_description.lower() or "회의" in task_description:
                 doc_type = "meeting_notes"
-                result = generate_meeting_notes.invoke({
-                    "meeting_title": context.get("meeting_title", "Team Meeting"),
-                    "participants": context.get("participants", ["Team"]),
-                    "agenda": context.get("agenda", "Discussion items"),
-                    "decisions": context.get("decisions", []),
-                    "action_items": context.get("action_items", [])
-                })
-                document_data = json.loads(result)
-                
-            elif "compliance" in task_description.lower() or "규정" in task_description:
-                doc_type = "compliance"
-                result = generate_compliance_report.invoke({
-                    "document_id": context.get("document_id", "DOC001"),
-                    "checks_performed": context.get("checks", ["Basic compliance"]),
-                    "violations": context.get("violations", []),
-                    "recommendations": context.get("recommendations", [])
-                })
-                document_data = json.loads(result)
+                document_data = {
+                    "document_type": "meeting_notes",
+                    "content": {
+                        "meeting_title": context.get("meeting_title", "Team Meeting"),
+                        "participants": context.get("participants", ["Team"]),
+                        "agenda": context.get("agenda", "Discussion items"),
+                        "decisions": context.get("decisions", []),
+                        "action_items": context.get("action_items", [])
+                    }
+                }
                 
             else:
                 # Default to visit report or general document
@@ -135,30 +115,16 @@ def document_agent(state: AgentState) -> dict:
                 })
                 document_data = json.loads(result)
         
-        # Save document to database
-        document_id = None
-        if document_data:
-            save_result = save_document_to_db.invoke({
-                "document": document_data,
-                "metadata": {
-                    "created_by": "document_agent",
-                    "task_description": task_description,
-                    "timestamp": datetime.now().isoformat()
-                }
-            })
-            save_data = json.loads(save_result)
-            document_id = save_data.get("document_id")
-            
-            logger.info(f"Document saved with ID: {document_id}")
+        # Generate document ID
+        document_id = f"DOC-{datetime.now().strftime('%Y%m%d%H%M%S')}"
         
         # Format output message
         document_message = f"""
 📄 **Document Generated Successfully**
 
 Document Type: {doc_type.replace('_', ' ').title()}
-Document ID: {document_id if document_data else 'N/A'}
+Document ID: {document_id}
 Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-Storage: {'Structured (SQLite)' if document_data and document_data.get('is_structured') else 'Unstructured (JSON)'}
 
 ---
 
@@ -167,32 +133,31 @@ Storage: {'Structured (SQLite)' if document_data and document_data.get('is_struc
 
 ---
 
-{"✅ Document ready for compliance check" if doc_type in ['proposal', 'visit_report', 'product_demo_report'] else "📋 Document completed"}
+{"✅ Document ready for compliance check" if doc_type in ['proposal', 'visit_report'] else "📋 Document completed"}
 """
         
         # Update progress
         progress_update["status"] = "completed"
-        progress_update["summary"] = f"Generated and saved {doc_type} document"
-        progress_update["document_id"] = document_id if document_data else None
+        progress_update["summary"] = f"Generated {doc_type} document"
+        progress_update["document_id"] = document_id
         
         # Store document in results
         results_update = state.get("results", {})
         results_update["document"] = {
-            "document_id": document_id if document_data else None,
+            "document_id": document_id,
             "type": doc_type,
             "data": document_data,
             "timestamp": datetime.now().isoformat(),
-            "status": "generated",
-            "storage_type": "structured" if document_data and document_data.get('is_structured') else "unstructured"
+            "status": "generated"
         }
         
         # Update context to trigger compliance check if needed
-        requires_compliance = doc_type in ['proposal', 'visit_report', 'product_demo_report', 'compliance']
+        requires_compliance = doc_type in ['proposal', 'visit_report', 'contract']
         updated_context = {
             **context,
             "document_generated": True,
             "document_type": doc_type,
-            "document_id": document_id if document_data else None,
+            "document_id": document_id,
             "requires_compliance_check": requires_compliance,
             "compliance_ready": requires_compliance  # Signal for auto-routing
         }

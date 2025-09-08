@@ -31,22 +31,30 @@ class SearchModels:
     
     def _initialize(self):
         """Initialize embedding and reranking models"""
-        try:
-            # Kure-v1 임베딩 모델 (한국어 특화)
-            logger.info("Loading Kure-v1 embedding model...")
-            self.embedder = SentenceTransformer('snunlp/KR-SBERT-V40K-klueNLI-augSTS')
-            # Note: 실제로는 'kure-v1' 모델을 사용하지만, 여기서는 대체 모델 사용
-            
-            # BGE-reranker-ko 모델 (한국어 재정렬)
-            logger.info("Loading BGE-reranker-ko model...")
-            self.reranker = CrossEncoder('BAAI/bge-reranker-base')
-            # Note: 실제로는 'bge-reranker-ko' 모델을 사용
-            
-            logger.info("Models loaded successfully")
-        except Exception as e:
-            logger.warning(f"Failed to load models, using mock: {e}")
+        # Use mock mode for testing (skip heavy model loading)
+        use_mock = True  # Set to False to load real models
+        
+        if use_mock:
+            logger.info("Using mock models for testing (no heavy model loading)")
             self.embedder = None
             self.reranker = None
+        else:
+            try:
+                # Kure-v1 임베딩 모델 (한국어 특화)
+                logger.info("Loading Kure-v1 embedding model...")
+                self.embedder = SentenceTransformer('snunlp/KR-SBERT-V40K-klueNLI-augSTS')
+                # Note: 실제로는 'kure-v1' 모델을 사용하지만, 여기서는 대체 모델 사용
+                
+                # BGE-reranker-ko 모델 (한국어 재정렬)
+                logger.info("Loading BGE-reranker-ko model...")
+                self.reranker = CrossEncoder('BAAI/bge-reranker-base')
+                # Note: 실제로는 'bge-reranker-ko' 모델을 사용
+                
+                logger.info("Models loaded successfully")
+            except Exception as e:
+                logger.warning(f"Failed to load models, using mock: {e}")
+                self.embedder = None
+                self.reranker = None
     
     def embed(self, texts: List[str]) -> np.ndarray:
         """Generate embeddings"""

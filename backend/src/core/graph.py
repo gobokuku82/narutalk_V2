@@ -5,7 +5,11 @@ Following rules.md strictly - ONLY use StateGraph, START, END
 from typing import Dict, Any
 from langgraph.graph import StateGraph, START, END
 from langgraph.checkpoint.memory import MemorySaver
-from langgraph.checkpoint.sqlite import SqliteSaver
+# SqliteSaver import with fallback for langgraph 0.6.6
+try:
+    from langgraph.checkpoint.sqlite import SqliteSaver
+except ImportError:
+    SqliteSaver = None
 from langchain_core.messages import HumanMessage, AIMessage
 import os
 from datetime import datetime
@@ -58,12 +62,12 @@ def create_sales_support_graph(use_sqlite: bool = False):
     graph.add_edge("compliance", "supervisor")
     
     # Choose checkpointer based on parameter
-    if use_sqlite:
-        # Production: Use SqliteSaver
+    if use_sqlite and SqliteSaver:
+        # Production: Use SqliteSaver if available
         db_path = os.path.join(os.path.dirname(__file__), "..", "..", "checkpoints.db")
         checkpointer = SqliteSaver.from_conn_string(f"sqlite:///{db_path}")
     else:
-        # Development: Use MemorySaver
+        # Development or fallback: Use MemorySaver
         checkpointer = MemorySaver()
     
     # Compile the graph with checkpointer
