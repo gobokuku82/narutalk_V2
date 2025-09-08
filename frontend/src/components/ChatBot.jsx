@@ -147,21 +147,40 @@ const ChatBot = () => {
     <div className="chatbot-container">
       <ChatHeader isConnected={isConnected} />
       
-      <MessageList messages={messages} />
-      
-      {isLoading && (
-        <ProgressBar 
-          progress={progress}
-          currentAgent={currentAgent}
-          isLoading={isLoading}
-          executionPlan={executionPlan}
-        />
-      )}
-      
-      <ChatInput 
-        onSendMessage={handleSendMessage}
-        disabled={isLoading || !isConnected}
-      />
+      <div className="chatbot-main">
+        <div className="character-sidebar">
+          <img 
+            src="/img/naru.png" 
+            alt="Naru" 
+            className="naru-character"
+          />
+          {isLoading && (
+            <img 
+              src="/gif/spinner.gif" 
+              alt="Loading" 
+              className="character-spinner"
+            />
+          )}
+        </div>
+        
+        <div className="chat-content">
+          <MessageList messages={messages} />
+          
+          {isLoading && (
+            <ProgressBar 
+              progress={progress}
+              currentAgent={currentAgent}
+              isLoading={isLoading}
+              executionPlan={executionPlan}
+            />
+          )}
+          
+          <ChatInput 
+            onSendMessage={handleSendMessage}
+            disabled={isLoading || !isConnected}
+          />
+        </div>
+      </div>
     </div>
   );
 };

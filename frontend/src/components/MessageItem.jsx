@@ -207,21 +207,33 @@ const MessageItem = ({ message, agent, data }) => {
 
   return (
     <div className={`message-item ${message.type}-type ${agent ? `${agent}-agent` : ''}`}>
-      {message.type === 'agent' && agent && (
-        <div className="message-header">
-          <span className="agent-badge">{agent}</span>
-          <span className="timestamp">{message.timestamp}</span>
+      <div className="message-wrapper">
+        {(message.type === 'agent' || message.type === 'system') && (
+          <img 
+            src="/img/naru.png" 
+            alt="Naru" 
+            className="message-character-icon"
+          />
+        )}
+        
+        <div className="message-bubble">
+          {message.type === 'agent' && agent && (
+            <div className="message-header">
+              <span className="agent-badge">{agent}</span>
+              <span className="timestamp">{message.timestamp}</span>
+            </div>
+          )}
+          
+          {message.type === 'user' && (
+            <div className="message-header user-header">
+              <span className="user-label">You</span>
+              <span className="timestamp">{message.timestamp}</span>
+            </div>
+          )}
+          
+          {renderContent()}
         </div>
-      )}
-      
-      {message.type === 'user' && (
-        <div className="message-header user-header">
-          <span className="user-label">You</span>
-          <span className="timestamp">{message.timestamp}</span>
-        </div>
-      )}
-      
-      {renderContent()}
+      </div>
     </div>
   );
 };
