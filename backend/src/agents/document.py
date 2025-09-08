@@ -45,6 +45,17 @@ def document_agent(state: AgentState) -> dict:
     results = state.get("results", {})
     messages = state.get("messages", [])
     
+    # Get results from all previous agents
+    search_results = results.get("search", {})
+    analytics_results = results.get("analytics", {})
+    
+    # Extract key information from previous agents
+    search_data = search_results.get("raw_data", {})
+    analytics_insights = analytics_results.get("key_insights", {})
+    
+    has_search_data = bool(search_data)
+    has_analytics_data = bool(analytics_insights)
+    
     # Progress tracking
     progress_update = {
         "agent": "document",
@@ -71,7 +82,29 @@ def document_agent(state: AgentState) -> dict:
         if is_natural_language:
             # Parse natural language and create structured document
             logger.info("Processing natural language input...")
-            nl_result = natural_language_to_document.invoke({"text": task_description})
+            
+            # Enhance the natural language processing with agent results
+            enhanced_text = task_description
+            if has_search_data or has_analytics_data:
+                enhanced_text += "\n\nAdditional Context from Analysis:"
+                
+                if has_search_data:
+                    companies = search_data.get("companies_found", [])
+                    products = search_data.get("products_found", [])
+                    if companies:
+                        enhanced_text += f"\nRelevant Companies: {', '.join(companies[:3])}"
+                    if products:
+                        enhanced_text += f"\nRelevant Products: {', '.join(products[:3])}"
+                    
+                if has_analytics_data:
+                    metrics = analytics_insights.get("performance_metrics", {})
+                    if metrics:
+                        enhanced_text += f"\nHealth Score: {metrics.get('health_score', 'N/A')}"
+                        enhanced_text += f"\nGrowth Rate: {metrics.get('growth_rate', 'N/A')}%"
+                
+                logger.info("Enhanced document with search and analytics data")
+            
+            nl_result = natural_language_to_document.invoke({"text": enhanced_text})
             document_data = json.loads(nl_result)
             doc_type = document_data.get("document_type", "general")
             
@@ -105,12 +138,34 @@ def document_agent(state: AgentState) -> dict:
             else:
                 # Default to visit report or general document
                 doc_type = "visit_report"
+                
+                # Enhance visit report with insights from other agents
+                discussion_points = context.get("discussion_points", ["General discussion"])
+                action_items = context.get("action_items", ["Follow up"])
+                
+                # Add insights from analytics
+                if has_analytics_data:
+                    recommendations = analytics_insights.get("recommendations", [])
+                    if recommendations:
+                        action_items.extend(recommendations[:2])  # Add top 2 recommendations
+                    
+                    trends = analytics_insights.get("trends", {})
+                    if trends.get("direction") == "declining":
+                        discussion_points.append("Discussed declining trend and mitigation strategies")
+                
+                # Add insights from search
+                if has_search_data:
+                    if search_data.get("companies_found"):
+                        discussion_points.append(f"Reviewed competitive landscape: {', '.join(search_data['companies_found'][:3])}")
+                    if search_data.get("products_found"):
+                        discussion_points.append(f"Discussed product offerings: {', '.join(search_data['products_found'][:3])}")
+                
                 result = create_visit_report.invoke({
                     "client_name": context.get("client_name", "Client"),
                     "visit_date": context.get("visit_date", datetime.now().strftime("%Y-%m-%d")),
                     "participants": context.get("participants", ["Sales Team"]),
-                    "discussion_points": context.get("discussion_points", ["General discussion"]),
-                    "action_items": context.get("action_items", ["Follow up"]),
+                    "discussion_points": discussion_points,
+                    "action_items": action_items,
                     "next_steps": context.get("next_steps", "Schedule next meeting")
                 })
                 document_data = json.loads(result)
@@ -118,13 +173,22 @@ def document_agent(state: AgentState) -> dict:
         # Generate document ID
         document_id = f"DOC-{datetime.now().strftime('%Y%m%d%H%M%S')}"
         
-        # Format output message
+        # Format output message with integration status
+        integration_status = ""
+        if has_search_data or has_analytics_data:
+            integration_status = "\n\n**Integrated Data Sources:**"
+            if has_search_data:
+                integration_status += f"\n• Search Results: {search_data.get('total_documents', 0)} documents incorporated"
+            if has_analytics_data:
+                integration_status += f"\n• Analytics Insights: {len(analytics_insights.get('recommendations', []))} recommendations included"
+        
         document_message = f"""
 📄 **Document Generated Successfully**
 
 Document Type: {doc_type.replace('_', ' ').title()}
 Document ID: {document_id}
 Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+{integration_status}
 
 ---
 
@@ -141,14 +205,20 @@ Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
         progress_update["summary"] = f"Generated {doc_type} document"
         progress_update["document_id"] = document_id
         
-        # Store document in results
+        # Store document in results with integration metadata
         results_update = state.get("results", {})
         results_update["document"] = {
             "document_id": document_id,
             "type": doc_type,
             "data": document_data,
             "timestamp": datetime.now().isoformat(),
-            "status": "generated"
+            "status": "generated",
+            "integrated_sources": {
+                "search_data_used": has_search_data,
+                "analytics_data_used": has_analytics_data,
+                "companies_included": search_data.get("companies_found", [])[:3] if has_search_data else [],
+                "recommendations_included": analytics_insights.get("recommendations", [])[:2] if has_analytics_data else []
+            }
         }
         
         # Update context to trigger compliance check if needed

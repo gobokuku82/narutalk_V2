@@ -38,6 +38,14 @@ def analytics_agent(state: AgentState) -> dict:
     context = state.get("context", {})
     messages = state.get("messages", [])
     
+    # Get results from previous agents (especially search agent)
+    previous_results = state.get("results", {})
+    search_results = previous_results.get("search", {})
+    
+    # Extract search insights if available
+    search_data = search_results.get("raw_data", {})
+    has_search_data = bool(search_data)
+    
     # Progress tracking
     progress_update = {
         "agent": "analytics",
@@ -92,10 +100,23 @@ def analytics_agent(state: AgentState) -> dict:
         # Use LLM to generate insights from the data
         data_summary = json.dumps(analysis_results, ensure_ascii=False, indent=2)
         
+        # Include search results in the analysis if available
+        search_context = ""
+        if has_search_data:
+            search_context = f"""
+        
+        Additionally, consider these search findings from previous analysis:
+        - Companies found: {search_data.get('companies_found', [])}
+        - Products found: {search_data.get('products_found', [])}
+        - Market insights: {search_data.get('market_insights', '')}
+        """
+            logger.info("Incorporating search results into analytics")
+        
         insight_prompt = f"""
         Based on the following data analysis results from our SQLite database:
         
         {data_summary[:3000]}  # Limit to avoid token overflow
+        {search_context}
         
         Task: {task_description}
         
@@ -106,6 +127,7 @@ def analytics_agent(state: AgentState) -> dict:
         4. Risk Factors or Concerns (if any)
         
         Focus on practical, data-driven insights.
+        If search data is available, correlate it with the analytics data.
         """
         
         # Get LLM insights
@@ -158,12 +180,44 @@ def analytics_agent(state: AgentState) -> dict:
         progress_update["summary"] = f"Analyzed {len(analysis_results)} data categories"
         progress_update["data_sources"] = list(analysis_results.keys())
         
-        # Store detailed results in state
+        # Store detailed results in state with structured insights
+        key_insights = {
+            "performance_metrics": {},
+            "trends": {},
+            "predictions": {},
+            "recommendations": []
+        }
+        
+        # Extract structured insights for other agents
+        if "kpis" in analysis_results:
+            key_insights["performance_metrics"] = {
+                "health_score": analysis_results["kpis"].get("overall_health_score", 0),
+                "growth_rate": analysis_results["kpis"].get("sales_kpis", {}).get("growth_rate", 0),
+                "team_performance": analysis_results["kpis"].get("employee_kpis", {}).get("avg_performance_score", 0)
+            }
+        
+        if "trends" in analysis_results:
+            key_insights["trends"] = {
+                "direction": analysis_results["trends"].get("customer_analysis", {}).get("trend_direction", "stable"),
+                "percentage_change": analysis_results["trends"].get("customer_analysis", {}).get("trend_percentage", 0)
+            }
+        
+        if "predictions" in analysis_results:
+            key_insights["predictions"] = analysis_results.get("predictions", {})
+        
+        # Add recommendations based on analysis
+        if key_insights["performance_metrics"].get("health_score", 0) < 70:
+            key_insights["recommendations"].append("Focus on improving team performance metrics")
+        if key_insights["trends"].get("direction") == "declining":
+            key_insights["recommendations"].append("Implement customer retention strategies")
+        
         results_update = state.get("results", {})
         results_update["analytics"] = {
             "timestamp": datetime.now().isoformat(),
             "analysis": analysis_content,
             "raw_data": analysis_results,
+            "key_insights": key_insights,  # Structured insights for other agents
+            "incorporated_search_data": has_search_data,
             "status": "success",
             "data_points_analyzed": sum(
                 len(v) if isinstance(v, dict) else 1 

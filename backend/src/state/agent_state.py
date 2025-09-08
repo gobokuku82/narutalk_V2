@@ -2,7 +2,7 @@
 Agent State definition for LangGraph 0.6.6
 Following rules.md strictly
 """
-from typing import Annotated, Literal, TypedDict, Any
+from typing import Annotated, Literal, TypedDict, Any, Optional
 from langgraph.graph.message import MessagesState, add_messages
 from langchain_core.messages import BaseMessage
 from enum import Enum
@@ -25,6 +25,14 @@ def add_progress(existing: list[dict], new: list[dict]) -> list[dict]:
     if not new:
         return existing
     return existing + new
+
+
+class AgentResults(TypedDict, total=False):
+    """State의 results 필드 구조 정의 - 에이전트 간 정보 공유용"""
+    analytics: dict  # Analytics 에이전트 결과 (KPIs, insights, metrics)
+    search: dict     # Search 에이전트 결과 (company info, products)
+    document: dict   # Document 에이전트 결과 (generated docs)
+    compliance: dict # Compliance 에이전트 결과 (validation results)
 
 
 class AgentState(MessagesState):
@@ -50,8 +58,8 @@ class AgentState(MessagesState):
     # Current task description
     task_description: str
     
-    # Results from each agent
-    results: dict[str, Any]
+    # Results from each agent - 타입 힌트 강화
+    results: AgentResults
     
     # Error tracking
     errors: list[str]
@@ -67,3 +75,9 @@ class AgentState(MessagesState):
     
     # Current step in execution plan
     current_step: int
+    
+    # Parallel execution support
+    parallel_tasks: list[str]
+    
+    # Agent dependencies
+    dependencies: dict[str, list[str]]

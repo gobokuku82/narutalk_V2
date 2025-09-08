@@ -47,6 +47,14 @@ def search_agent(state: AgentState) -> dict:
     context = state.get("context", {})
     messages = state.get("messages", [])
     
+    # Get results from previous agents (especially analytics)
+    previous_results = state.get("results", {})
+    analytics_results = previous_results.get("analytics", {})
+    
+    # Extract analytics insights if available
+    analytics_insights = analytics_results.get("key_insights", {})
+    has_analytics_data = bool(analytics_insights)
+    
     # Progress tracking
     progress_update = {
         "agent": "search",
@@ -57,8 +65,27 @@ def search_agent(state: AgentState) -> dict:
     logger.info(f"Search agent processing: {task_description[:100]}...")
     
     try:
-        # Determine search type from task description
+        # Determine search type from task description and analytics insights
         search_type = "all"
+        
+        # Use analytics insights to refine search focus
+        if has_analytics_data:
+            performance_metrics = analytics_insights.get("performance_metrics", {})
+            trends = analytics_insights.get("trends", {})
+            recommendations = analytics_insights.get("recommendations", [])
+            
+            # Adjust search based on analytics findings
+            if performance_metrics.get("health_score", 100) < 70:
+                # Low health score - focus on improvement areas
+                logger.info("Low health score detected, adjusting search focus...")
+                if "customer" not in task_description.lower():
+                    search_type = "customers"  # Focus on customer data
+            elif trends.get("direction") == "declining":
+                # Declining trends - search for market opportunities
+                logger.info("Declining trends detected, searching for opportunities...")
+                search_type = "products"  # Focus on product offerings
+        
+        # Override with explicit task requirements
         if "customer" in task_description.lower() or "고객" in task_description.lower():
             search_type = "customers"
         elif "product" in task_description.lower() or "제품" in task_description.lower():
@@ -169,10 +196,23 @@ def search_agent(state: AgentState) -> dict:
         # Generate LLM insights from search results
         search_summary = json.dumps(merged_data, ensure_ascii=False, indent=2)
         
+        # Include analytics context in search analysis
+        analytics_context = ""
+        if has_analytics_data:
+            analytics_context = f"""
+        
+        Additionally, consider these analytics insights:
+        - Performance Health Score: {analytics_insights.get('performance_metrics', {}).get('health_score', 'N/A')}
+        - Trend Direction: {analytics_insights.get('trends', {}).get('direction', 'N/A')}
+        - Key Recommendations: {', '.join(analytics_insights.get('recommendations', []))}
+        """
+            logger.info("Incorporating analytics insights into search analysis")
+        
         insight_prompt = f"""
         Based on the following multi-source search results (SQLite, ChromaDB, External APIs):
         
         {search_summary[:4000]}  # Limit to avoid token overflow
+        {analytics_context}
         
         Search Query: {task_description}
         
@@ -183,6 +223,7 @@ def search_agent(state: AgentState) -> dict:
         4. Information Gaps (if any)
         
         Focus on accuracy and relevance to the search query.
+        If analytics data is available, correlate search findings with performance metrics.
         """
         
         # Get LLM insights
@@ -219,7 +260,20 @@ def search_agent(state: AgentState) -> dict:
         progress_update["summary"] = f"Searched {len(all_results)} sources, found {len(all_documents)} documents"
         progress_update["search_stats"] = search_stats
         
-        # Store detailed results in state
+        # Extract key entities for other agents
+        companies_found = []
+        products_found = []
+        market_insights = ""
+        
+        if merged_data and "results" in merged_data:
+            for source, items in merged_data["results"].items():
+                if isinstance(items, dict):
+                    if "customers" in items:
+                        companies_found.extend([c.get("name", "") for c in items["customers"] if "name" in c])
+                    if "products" in items:
+                        products_found.extend([p.get("name", "") for p in items["products"] if "name" in p])
+        
+        # Store detailed results in state with structured data
         results_update = state.get("results", {})
         results_update["search"] = {
             "timestamp": datetime.now().isoformat(),
@@ -228,6 +282,13 @@ def search_agent(state: AgentState) -> dict:
             "merged_results": merged_data,
             "reranked_results": reranked_results,
             "llm_insights": llm_response.content,
+            "raw_data": {  # Structured data for other agents
+                "companies_found": list(set(companies_found[:10])),  # Deduplicated top 10
+                "products_found": list(set(products_found[:10])),
+                "market_insights": llm_response.content[:500],  # Summary for other agents
+                "search_focus": search_type,
+                "incorporated_analytics": has_analytics_data
+            },
             "status": "success",
             "total_documents": len(all_documents)
         }

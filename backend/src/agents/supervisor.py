@@ -24,6 +24,21 @@ def supervisor_agent(state: AgentState) -> dict:
     last_message = messages[-1] if messages else None
     context = state.get("context", {})
     
+    # Analyze State to understand current progress
+    results = state.get("results", {})
+    errors = state.get("errors", [])
+    
+    # Check what agents have already run
+    completed_agents = []
+    if results.get("analytics"):
+        completed_agents.append("analytics")
+    if results.get("search"):
+        completed_agents.append("search")
+    if results.get("document"):
+        completed_agents.append("document")
+    if results.get("compliance"):
+        completed_agents.append("compliance")
+    
     # Default values for state updates
     progress_update = {
         "agent": "supervisor",
@@ -116,15 +131,25 @@ def supervisor_agent(state: AgentState) -> dict:
             "context": {**context, "compliance_checking": True}
         }
     
-    # Check if there's a next_agent signal from previous agent
+    # Check if there's a next_agent signal from previous agent (like compliance re-routing)
     next_agent = state.get("next_agent")
     if next_agent:
+        # Analyze why re-routing is needed
+        re_route_reason = ""
+        if next_agent == "document" and context.get("document_revision_needed"):
+            re_route_reason = "Document needs revision based on compliance violations"
+        elif next_agent == "search" and context.get("search_refinement_needed"):
+            re_route_reason = "Search refinement needed for compliance requirements"
+        else:
+            re_route_reason = f"Previous agent requested routing to {next_agent}"
+        
         progress_update["decision"] = next_agent
         progress_update["auto_routed"] = True
-        progress_update["reason"] = f"Previous agent requested routing to {next_agent}"
+        progress_update["reason"] = re_route_reason
+        progress_update["state_based_routing"] = True
         
         routing_message = AIMessage(
-            content=f"Auto-routing to {next_agent} agent as requested.",
+            content=f"State-based routing to {next_agent}: {re_route_reason}",
             metadata={
                 "agent": "supervisor",
                 "task_type": next_agent,
@@ -145,10 +170,25 @@ def supervisor_agent(state: AgentState) -> dict:
     if last_message and isinstance(last_message, HumanMessage):
         user_request = last_message.content
         
-        # Create routing prompt for execution plan
+        # Create routing prompt for execution plan with State awareness
+        state_context = ""
+        if completed_agents:
+            state_context = f"\n\nAgents already executed: {', '.join(completed_agents)}"
+        if errors:
+            state_context += f"\nPrevious errors: {errors[:2]}"  # Show first 2 errors
+        
+        # Include insights from previous agent results
+        if results.get("analytics", {}).get("key_insights"):
+            insights = results["analytics"]["key_insights"]
+            state_context += f"\nAnalytics insights: Health score={insights.get('performance_metrics', {}).get('health_score', 'N/A')}"
+        if results.get("search", {}).get("raw_data"):
+            search_data = results["search"]["raw_data"]
+            state_context += f"\nSearch found: {len(search_data.get('companies_found', []))} companies, {len(search_data.get('products_found', []))} products"
+        
         routing_prompt = f"""
         Analyze this user request and create an execution plan:
         "{user_request}"
+        {state_context}
         
         Available agents:
         - analytics: For data analysis, metrics, KPIs, and insights
@@ -161,6 +201,8 @@ def supervisor_agent(state: AgentState) -> dict:
         1. Simple queries may need only one agent
         2. Complex requests may need multiple agents in sequence
         3. Document creation often requires compliance check afterwards
+        4. Use State information to avoid redundant agent calls
+        5. If agents have already run, don't include them again unless necessary
         
         Respond in JSON format with the execution plan:
         {{"agents": ["agent1", "agent2"], "reason": "brief explanation"}}
@@ -205,10 +247,12 @@ def supervisor_agent(state: AgentState) -> dict:
         updated_context["current_step"] = 0
         updated_context["total_steps"] = len(planned_agents)
         
-        # Update progress
+        # Update progress with State analysis
         progress_update["decision"] = first_agent
         progress_update["execution_plan"] = planned_agents
         progress_update["request"] = user_request[:100]  # First 100 chars
+        progress_update["state_aware"] = True
+        progress_update["agents_already_run"] = completed_agents
         
         # Prepare response message with execution plan
         routing_message = AIMessage(

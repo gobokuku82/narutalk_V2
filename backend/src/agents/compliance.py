@@ -210,14 +210,45 @@ def compliance_agent(state: AgentState) -> dict:
             "status": "completed"
         }
         
-        # Update context
+        # Determine if re-routing is needed based on compliance status
+        needs_rework = compliance_status in ["FAILED", "CONDITIONAL"]
+        next_agent = None
+        
+        if needs_rework:
+            # Determine which agent to route back to
+            if validation_data.get("critical_count", 0) > 0:
+                # Critical violations - need to regenerate document
+                next_agent = "document"
+                logger.warning(f"Critical violations found - routing back to document agent")
+            elif len([v for v in validation_data.get("violations", []) if v.get("level") == "high"]) > 2:
+                # Multiple high violations - may need different search parameters
+                next_agent = "search"
+                logger.warning(f"Multiple high violations - routing back to search agent")
+            elif action_required == "REVISION_REQUIRED":
+                # Document needs revision
+                next_agent = "document"
+                logger.warning(f"Document revision required - routing back to document agent")
+        
+        # Update context with compliance results and routing decision
         updated_context = {
             **context,
             "compliance_checked": True,
             "compliance_status": compliance_status,
             "compliance_passed": compliance_status in ["PASSED", "PASSED_WITH_WARNINGS"],
-            "validation_id": validation_data.get("validation_id")
+            "validation_id": validation_data.get("validation_id"),
+            "needs_rework": needs_rework,
+            "compliance_violations": validation_data.get("violations", []),
+            "compliance_suggestions": suggestions_data.get("revision_suggestions", [])
         }
+        
+        # If re-routing, add information for the target agent
+        if next_agent == "document":
+            updated_context["document_revision_needed"] = True
+            updated_context["revision_reason"] = "compliance_violations"
+            updated_context["revision_suggestions"] = suggestions_data.get("revision_suggestions", [])
+        elif next_agent == "search":
+            updated_context["search_refinement_needed"] = True
+            updated_context["search_focus"] = "compliance_requirements"
         
         return {
             "messages": [AIMessage(
@@ -225,7 +256,8 @@ def compliance_agent(state: AgentState) -> dict:
                 metadata={
                     "agent": "compliance",
                     "status": "completed",
-                    "compliance_status": compliance_status
+                    "compliance_status": compliance_status,
+                    "needs_rework": needs_rework
                 }
             )],
             "current_agent": "compliance",
@@ -234,7 +266,7 @@ def compliance_agent(state: AgentState) -> dict:
             "context": updated_context,
             "execution_plan": state.get("execution_plan", []),
             "current_step": state.get("current_step", 0),
-            "next_agent": None
+            "next_agent": next_agent  # Will trigger re-routing if not None
         }
         
     except Exception as e:
