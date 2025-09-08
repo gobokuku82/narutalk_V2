@@ -1,0 +1,25 @@
+INFO:     Will watch for changes in these directories: ['C:\\kdy\\Projects\\narutalk_upgrade\\beta_v002\\backend']
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [38064] using WatchFiles
+[32m2025-09-08 12:24:06.725[0m | [1mINFO    [0m | [36msrc.tools.database[0m:[36m_create_tables[0m:[36m126[0m - [1mDatabase tables created successfully[0m
+[32m2025-09-08 12:24:06.725[0m | [1mINFO    [0m | [36msrc.tools.database[0m:[36m__init__[0m:[36m35[0m - [1mMock database initialized at C:\kdy\Projects\narutalk_upgrade\beta_v002\backend\data\mock_sales.db[0m
+C:\Users\gobok\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.11_qbz5n2kfra8p0\LocalCache\local-packages\Python311\site-packages\torchvision\io\image.py:13: UserWarning: Failed to load image Python extension: '[WinError 127] ÁöÁ¤µÈ ÇÁ·Î½ÃÀú¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù'If you don't plan on using image functionality from `torchvision.io`, you can ignore this warning. Otherwise, there might be something wrong with your environment. Did you have `libjpeg` or `libpng` installed before building `torchvision` from source?
+  warn(
+[32m2025-09-08 12:24:13.486[0m | [1mINFO    [0m | [36msrc.tools.database[0m:[36m_create_tables[0m:[36m126[0m - [1mDatabase tables created successfully[0m
+[32m2025-09-08 12:24:13.486[0m | [1mINFO    [0m | [36msrc.tools.database[0m:[36m__init__[0m:[36m35[0m - [1mMock database initialized at C:\kdy\Projects\narutalk_upgrade\beta_v002\backend\data\mock_sales.db[0m
+[32m2025-09-08 12:24:13.604[0m | [1mINFO    [0m | [36msrc.tools.search_tools[0m:[36m_initialize[0m:[36m38[0m - [1mUsing mock models for testing (no heavy model loading)[0m
+[32m2025-09-08 12:24:13.714[0m | [1mINFO    [0m | [36msrc.tools.document_tools[0m:[36m__init__[0m:[36m126[0m - [1mDocument database initialized at C:\kdy\Projects\narutalk_upgrade\beta_v002\backend\data\documents.db[0m
+[32m2025-09-08 12:24:13.751[0m | [1mINFO    [0m | [36msrc.api.mock_db[0m:[36minitialize_mock_data[0m:[36m213[0m - [1mMock database initialized with sample data[0m
+INFO:     Started server process [28312]
+INFO:     Waiting for application startup.
+[32m2025-09-08 12:24:13.777[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mlifespan[0m:[36m39[0m - [1m\U0001f680 Starting Enhanced Sales Support AI Application...[0m
+[32m2025-09-08 12:24:13.795[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mlifespan[0m:[36m45[0m - [1m\u2705 LangGraph 0.6.6 initialized with Memory checkpointer[0m
+INFO:     Application startup complete.
+INFO:     connection rejected (400 Bad Request)
+INFO:     connection closed
+INFO:     127.0.0.1:51610 - "WebSocket /ws/stream?client_id=test_client" [accepted]
+[32m2025-09-08 12:27:31.037[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mconnect[0m:[36m116[0m - [1mWebSocket connected: test_client[0m
+INFO:     connection open
+[32m2025-09-08 12:28:11.019[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mdisconnect[0m:[36m122[0m - [1mWebSocket disconnected: test_client[0m
+[32m2025-09-08 12:28:11.019[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mwebsocket_stream[0m:[36m304[0m - [1mWebSocket test_client disconnected normally[0m
+INFO:     connection closed
