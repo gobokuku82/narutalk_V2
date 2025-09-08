@@ -16,7 +16,10 @@ const ChatBot = () => {
   const wsRef = useRef(null);
 
   useEffect(() => {
+    let isCleanup = false;
+    
     const handleMessage = (data) => {
+      if (isCleanup) return;
       console.log('Received message:', data);
       
       if (data.type === 'agent_update') {
@@ -59,21 +62,41 @@ const ChatBot = () => {
     };
 
     const handleConnect = () => {
-      console.log('WebSocket connected');
+      if (isCleanup) return;
+      console.log('WebSocket connected in ChatBot');
       setIsConnected(true);
     };
 
     const handleDisconnect = () => {
-      console.log('WebSocket disconnected');
+      if (isCleanup) return;
+      console.log('WebSocket disconnected in ChatBot');
       setIsConnected(false);
       setIsLoading(false);
       setCurrentAgent(null);
     };
 
-    wsRef.current = connectWebSocket(handleMessage, handleConnect, handleDisconnect);
+    // Only connect if not already connected
+    if (!wsRef.current) {
+      console.log('Initializing WebSocket connection...');
+      wsRef.current = connectWebSocket(handleMessage, handleConnect, handleDisconnect);
+    }
 
     return () => {
-      disconnectWebSocket();
+      console.log('ChatBot cleanup triggered');
+      isCleanup = true;
+      // Don't disconnect immediately - only on actual unmount
+      // This prevents premature disconnection during StrictMode double-render
+    };
+  }, []);
+
+  // Cleanup on actual unmount
+  useEffect(() => {
+    return () => {
+      if (wsRef.current) {
+        console.log('ChatBot unmounting, disconnecting WebSocket');
+        disconnectWebSocket();
+        wsRef.current = null;
+      }
     };
   }, []);
 

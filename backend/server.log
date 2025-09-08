@@ -23,3 +23,103 @@ INFO:     connection open
 [32m2025-09-08 12:28:11.019[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mdisconnect[0m:[36m122[0m - [1mWebSocket disconnected: test_client[0m
 [32m2025-09-08 12:28:11.019[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mwebsocket_stream[0m:[36m304[0m - [1mWebSocket test_client disconnected normally[0m
 INFO:     connection closed
+INFO:     127.0.0.1:60287 - "WebSocket /ws/stream" [accepted]
+[32m2025-09-08 12:35:51.319[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mconnect[0m:[36m116[0m - [1mWebSocket connected: client_20250908_123551[0m
+INFO:     connection open
+[32m2025-09-08 12:36:16.154[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mdisconnect[0m:[36m122[0m - [1mWebSocket disconnected: client_20250908_123551[0m
+[32m2025-09-08 12:36:16.154[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mwebsocket_stream[0m:[36m304[0m - [1mWebSocket client_20250908_123551 disconnected normally[0m
+INFO:     connection closed
+INFO:     127.0.0.1:55745 - "WebSocket /ws/stream" [accepted]
+[32m2025-09-08 12:36:16.486[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mconnect[0m:[36m116[0m - [1mWebSocket connected: client_20250908_123616[0m
+INFO:     connection open
+[32m2025-09-08 12:36:17.556[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mdisconnect[0m:[36m122[0m - [1mWebSocket disconnected: client_20250908_123616[0m
+[32m2025-09-08 12:36:17.556[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mwebsocket_stream[0m:[36m304[0m - [1mWebSocket client_20250908_123616 disconnected normally[0m
+INFO:     connection closed
+INFO:     127.0.0.1:52015 - "WebSocket /ws/stream" [accepted]
+[32m2025-09-08 12:36:17.878[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mconnect[0m:[36m116[0m - [1mWebSocket connected: client_20250908_123617[0m
+INFO:     connection open
+[32m2025-09-08 12:36:17.961[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mdisconnect[0m:[36m122[0m - [1mWebSocket disconnected: client_20250908_123617[0m
+[32m2025-09-08 12:36:17.961[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mwebsocket_stream[0m:[36m304[0m - [1mWebSocket client_20250908_123617 disconnected normally[0m
+INFO:     connection closed
+INFO:     127.0.0.1:54704 - "WebSocket /ws/stream" [accepted]
+[32m2025-09-08 12:36:18.571[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mconnect[0m:[36m116[0m - [1mWebSocket connected: client_20250908_123618[0m
+INFO:     connection open
+[32m2025-09-08 12:36:18.892[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mdisconnect[0m:[36m122[0m - [1mWebSocket disconnected: client_20250908_123618[0m
+[32m2025-09-08 12:36:18.892[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mwebsocket_stream[0m:[36m304[0m - [1mWebSocket client_20250908_123618 disconnected normally[0m
+INFO:     connection closed
+INFO:     127.0.0.1:60022 - "WebSocket /ws/stream" [accepted]
+[32m2025-09-08 12:36:19.218[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mconnect[0m:[36m116[0m - [1mWebSocket connected: client_20250908_123619[0m
+INFO:     connection open
+[32m2025-09-08 12:36:19.706[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mdisconnect[0m:[36m122[0m - [1mWebSocket disconnected: client_20250908_123619[0m
+[32m2025-09-08 12:36:19.706[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mwebsocket_stream[0m:[36m304[0m - [1mWebSocket client_20250908_123619 disconnected normally[0m
+INFO:     connection closed
+INFO:     127.0.0.1:62175 - "WebSocket /ws/stream" [accepted]
+[32m2025-09-08 12:36:21.208[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mconnect[0m:[36m116[0m - [1mWebSocket connected: client_20250908_123621[0m
+INFO:     connection open
+[32m2025-09-08 12:36:22.106[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mdisconnect[0m:[36m122[0m - [1mWebSocket disconnected: client_20250908_123621[0m
+[32m2025-09-08 12:36:22.106[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mwebsocket_stream[0m:[36m304[0m - [1mWebSocket client_20250908_123621 disconnected normally[0m
+INFO:     connection closed
+INFO:     127.0.0.1:60480 - "WebSocket /ws/stream" [accepted]
+[32m2025-09-08 12:36:36.883[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mconnect[0m:[36m116[0m - [1mWebSocket connected: client_20250908_123636[0m
+INFO:     connection open
+[32m2025-09-08 12:36:40.430[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mdisconnect[0m:[36m122[0m - [1mWebSocket disconnected: client_20250908_123636[0m
+[32m2025-09-08 12:36:40.430[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mwebsocket_stream[0m:[36m304[0m - [1mWebSocket client_20250908_123636 disconnected normally[0m
+INFO:     connection closed
+INFO:     127.0.0.1:59784 - "WebSocket /ws/stream" [accepted]
+[32m2025-09-08 12:36:40.755[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mconnect[0m:[36m116[0m - [1mWebSocket connected: client_20250908_123640[0m
+INFO:     connection open
+[32m2025-09-08 12:36:41.376[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mdisconnect[0m:[36m122[0m - [1mWebSocket disconnected: client_20250908_123640[0m
+[32m2025-09-08 12:36:41.376[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mwebsocket_stream[0m:[36m304[0m - [1mWebSocket client_20250908_123640 disconnected normally[0m
+INFO:     connection closed
+INFO:     127.0.0.1:60510 - "WebSocket /ws/stream" [accepted]
+[32m2025-09-08 12:36:41.700[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mconnect[0m:[36m116[0m - [1mWebSocket connected: client_20250908_123641[0m
+INFO:     connection open
+[32m2025-09-08 12:38:59.229[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mdisconnect[0m:[36m122[0m - [1mWebSocket disconnected: client_20250908_123641[0m
+[32m2025-09-08 12:38:59.229[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mwebsocket_stream[0m:[36m304[0m - [1mWebSocket client_20250908_123641 disconnected normally[0m
+INFO:     connection closed
+INFO:     127.0.0.1:52581 - "WebSocket /ws/stream" [accepted]
+[32m2025-09-08 12:39:24.530[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mconnect[0m:[36m116[0m - [1mWebSocket connected: client_20250908_123924[0m
+INFO:     connection open
+[32m2025-09-08 12:39:33.233[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mdisconnect[0m:[36m122[0m - [1mWebSocket disconnected: client_20250908_123924[0m
+[32m2025-09-08 12:39:33.235[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mwebsocket_stream[0m:[36m304[0m - [1mWebSocket client_20250908_123924 disconnected normally[0m
+INFO:     connection closed
+INFO:     127.0.0.1:50786 - "WebSocket /ws/stream" [accepted]
+[32m2025-09-08 12:39:33.542[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mconnect[0m:[36m116[0m - [1mWebSocket connected: client_20250908_123933[0m
+INFO:     connection open
+[32m2025-09-08 12:39:42.225[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mdisconnect[0m:[36m122[0m - [1mWebSocket disconnected: client_20250908_123933[0m
+[32m2025-09-08 12:39:42.225[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mwebsocket_stream[0m:[36m304[0m - [1mWebSocket client_20250908_123933 disconnected normally[0m
+INFO:     connection closed
+INFO:     127.0.0.1:56910 - "WebSocket /ws/stream" [accepted]
+[32m2025-09-08 12:39:42.531[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mconnect[0m:[36m116[0m - [1mWebSocket connected: client_20250908_123942[0m
+INFO:     connection open
+[32m2025-09-08 12:39:58.262[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mdisconnect[0m:[36m122[0m - [1mWebSocket disconnected: client_20250908_123942[0m
+[32m2025-09-08 12:39:58.262[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mwebsocket_stream[0m:[36m304[0m - [1mWebSocket client_20250908_123942 disconnected normally[0m
+INFO:     connection closed
+INFO:     127.0.0.1:50617 - "WebSocket /ws/stream" [accepted]
+[32m2025-09-08 12:39:58.768[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mconnect[0m:[36m116[0m - [1mWebSocket connected: client_20250908_123958[0m
+INFO:     connection open
+INFO:     127.0.0.1:0 - "GET /main.64161234df19b28e8cfd.hot-update.json HTTP/1.1" 404 Not Found
+[32m2025-09-08 12:42:05.809[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mdisconnect[0m:[36m122[0m - [1mWebSocket disconnected: client_20250908_123958[0m
+[32m2025-09-08 12:42:05.809[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mwebsocket_stream[0m:[36m304[0m - [1mWebSocket client_20250908_123958 disconnected normally[0m
+INFO:     connection closed
+INFO:     127.0.0.1:55612 - "WebSocket /ws/stream" [accepted]
+[32m2025-09-08 12:42:06.264[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mconnect[0m:[36m116[0m - [1mWebSocket connected: client_20250908_124206[0m
+INFO:     connection open
+INFO:     127.0.0.1:61034 - "WebSocket /ws/stream" [accepted]
+[32m2025-09-08 12:42:06.295[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mconnect[0m:[36m116[0m - [1mWebSocket connected: client_20250908_124206[0m
+INFO:     connection open
+[32m2025-09-08 12:42:07.786[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mdisconnect[0m:[36m122[0m - [1mWebSocket disconnected: client_20250908_124206[0m
+[32m2025-09-08 12:42:07.786[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mwebsocket_stream[0m:[36m304[0m - [1mWebSocket client_20250908_124206 disconnected normally[0m
+INFO:     connection closed
+[32m2025-09-08 12:46:57.788[0m | [1mINFO    [0m | [36msrc.api.app[0m:[36mwebsocket_stream[0m:[36m271[0m - [1mWebSocket received from client_20250908_124206: invoke[0m
+[32m2025-09-08 12:46:59.512[0m | [1mINFO    [0m | [36msrc.agents.search[0m:[36msearch_agent[0m:[36m57[0m - [1mSearch agent processing: ¼­¿ï´ëº´¿ø Á¾¾ç³»°ú ½ÃÀåÀ» Á¶»çÇÏ°í, ¿ì¸® Á¦Ç° ÆÇ¸Å ½ÇÀûÀ» ºÐ¼®ÇÑ ÈÄ, ½Å±Ô Ç×¾ÏÁ¦ Á¦¾È¼­¸¦ ÀÛ¼ºÇÏ°í ±ÔÁ¤ °ËÅä±îÁö ¿Ï·áÇØ...[0m
+[32m2025-09-08 12:46:59.512[0m | [1mINFO    [0m | [36msrc.agents.search[0m:[36msearch_agent[0m:[36m79[0m - [1mSearching internal database...[0m
+[32m2025-09-08 12:46:59.512[0m | [1mINFO    [0m | [36msrc.tools.search_tools[0m:[36msearch_internal_db[0m:[36m302[0m - [1mInternal DB search for '¼­¿ï´ëº´¿ø Á¾¾ç³»°ú ½ÃÀåÀ» Á¶»çÇÏ°í, ¿ì¸® Á¦Ç° ÆÇ¸Å ½ÇÀûÀ» ºÐ¼®ÇÑ ÈÄ, ½Å±Ô Ç×¾ÏÁ¦ Á¦¾È¼­¸¦ ÀÛ¼ºÇÏ°í ±ÔÁ¤ °ËÅä±îÁö ¿Ï·áÇØ' found 0 categories[0m
+[32m2025-09-08 12:46:59.512[0m | [1mINFO    [0m | [36msrc.agents.search[0m:[36msearch_agent[0m:[36m99[0m - [1mSearching ChromaDB vector database...[0m
+[32m2025-09-08 12:46:59.545[0m | [1mINFO    [0m | [36msrc.tools.search_tools[0m:[36msearch_vector_db[0m:[36m339[0m - [1mVector DB search for '¼­¿ï´ëº´¿ø Á¾¾ç³»°ú ½ÃÀåÀ» Á¶»çÇÏ°í, ¿ì¸® Á¦Ç° ÆÇ¸Å ½ÇÀûÀ» ºÐ¼®ÇÑ ÈÄ, ½Å±Ô Ç×¾ÏÁ¦ Á¦¾È¼­¸¦ ÀÛ¼ºÇÏ°í ±ÔÁ¤ °ËÅä±îÁö ¿Ï·áÇØ' found 3 results[0m
+[32m2025-09-08 12:46:59.545[0m | [1mINFO    [0m | [36msrc.agents.search[0m:[36msearch_agent[0m:[36m129[0m - [1mInsufficient internal results, searching external APIs...[0m
+[32m2025-09-08 12:46:59.545[0m | [1mINFO    [0m | [36msrc.tools.search_tools[0m:[36msearch_external_api[0m:[36m401[0m - [1mExternal API (naver) search for '¼­¿ï´ëº´¿ø Á¾¾ç³»°ú ½ÃÀåÀ» Á¶»çÇÏ°í, ¿ì¸® Á¦Ç° ÆÇ¸Å ½ÇÀûÀ» ºÐ¼®ÇÑ ÈÄ, ½Å±Ô Ç×¾ÏÁ¦ Á¦¾È¼­¸¦ ÀÛ¼ºÇÏ°í ±ÔÁ¤ °ËÅä±îÁö ¿Ï·áÇØ' returned 2 results[0m
+[32m2025-09-08 12:46:59.545[0m | [1mINFO    [0m | [36msrc.agents.search[0m:[36msearch_agent[0m:[36m149[0m - [1mReranking 5 documents...[0m
+[32m2025-09-08 12:46:59.545[0m | [1mINFO    [0m | [36msrc.tools.search_tools[0m:[36mrerank_search_results[0m:[36m444[0m - [1mReranked 5 documents, returned top 5[0m
+[32m2025-09-08 12:46:59.545[0m | [1mINFO    [0m | [36msrc.agents.search[0m:[36msearch_agent[0m:[36m158[0m - [1mMerging search results...[0m
+[32m2025-09-08 12:46:59.546[0m | [1mINFO    [0m | [36msrc.tools.search_tools[0m:[36mmerge_search_results[0m:[36m526[0m - [1mMerged 5 results from 3 sources[0m

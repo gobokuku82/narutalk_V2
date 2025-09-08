@@ -35,15 +35,22 @@ const reconnect = () => {
 };
 
 export const connectWebSocket = (onMessage, onConnect, onDisconnect) => {
+  // Check if already connected
+  if (socket && socket.readyState === WebSocket.OPEN) {
+    console.log('WebSocket already connected, skipping new connection');
+    return socket;
+  }
+  
   messageHandlers = { onMessage, onConnect, onDisconnect };
   
   const wsUrl = process.env.REACT_APP_WS_URL || 'ws://localhost:8000/ws/stream';
+  console.log(`[WebSocket] Attempting to connect to ${wsUrl}`);
   
   try {
     socket = new WebSocket(wsUrl);
     
     socket.onopen = () => {
-      console.log('WebSocket connected');
+      console.log('[WebSocket] Connection opened successfully');
       reconnectAttempts = 0;
       if (reconnectTimeout) {
         clearTimeout(reconnectTimeout);
@@ -53,10 +60,11 @@ export const connectWebSocket = (onMessage, onConnect, onDisconnect) => {
     };
     
     socket.onclose = (event) => {
-      console.log('WebSocket disconnected:', event.code, event.reason);
+      console.log(`[WebSocket] Connection closed - Code: ${event.code}, Reason: ${event.reason}, Clean: ${event.wasClean}`);
       if (onDisconnect) onDisconnect();
       
       if (!event.wasClean && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+        console.log('[WebSocket] Unclean close, attempting reconnect...');
         reconnect();
       }
     };
@@ -64,7 +72,7 @@ export const connectWebSocket = (onMessage, onConnect, onDisconnect) => {
     socket.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        console.log('Received message:', data);
+        console.log('[WebSocket] Message received:', data.type, data);
         
         if (data.type === 'progress' || data.type === 'node_output') {
           // Convert backend message format to frontend expected format
@@ -105,7 +113,7 @@ export const connectWebSocket = (onMessage, onConnect, onDisconnect) => {
     };
     
     socket.onerror = (error) => {
-      console.error('WebSocket error:', error);
+      console.error('[WebSocket] Error occurred:', error);
       if (onMessage) {
         onMessage({
           type: 'error',
@@ -115,7 +123,7 @@ export const connectWebSocket = (onMessage, onConnect, onDisconnect) => {
     };
     
   } catch (error) {
-    console.error('Failed to create WebSocket:', error);
+    console.error('[WebSocket] Failed to create WebSocket:', error);
     reconnect();
   }
   
@@ -130,9 +138,9 @@ export const sendMessage = (data) => {
       thread_id: data.thread_id || null
     };
     socket.send(JSON.stringify(message));
-    console.log('Sent message:', message);
+    console.log('[WebSocket] Sent message:', message);
   } else {
-    console.error('WebSocket is not connected');
+    console.error(`[WebSocket] Cannot send message - Socket state: ${socket ? socket.readyState : 'null'}`);
   }
 };
 

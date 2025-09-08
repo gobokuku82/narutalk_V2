@@ -124,11 +124,18 @@ class EnhancedConnectionManager:
     async def send_message(self, message: str, client_id: str):
         if client_id in self.active_connections:
             websocket = self.active_connections[client_id]
-            await websocket.send_text(message)
-            self.connection_metadata[client_id]["message_count"] += 1
+            try:
+                await websocket.send_text(message)
+                self.connection_metadata[client_id]["message_count"] += 1
+            except Exception as e:
+                logger.warning(f"Failed to send message to {client_id}: {e}")
+                # Remove disconnected client
+                self.disconnect(client_id)
+                return False
+        return True
 
     async def send_json(self, data: dict, client_id: str):
-        await self.send_message(json.dumps(data, ensure_ascii=False), client_id)
+        return await self.send_message(json.dumps(data, ensure_ascii=False), client_id)
 
     async def broadcast(self, message: str):
         for client_id, connection in self.active_connections.items():
@@ -335,8 +342,13 @@ async def handle_websocket_invoke(websocket: WebSocket, client_id: str, message:
             for node_name, node_output in output.items():
                 node_count += 1
                 
+                # Check if client is still connected before sending
+                if client_id not in manager.active_connections:
+                    logger.info(f"Client {client_id} disconnected, stopping stream")
+                    return
+                
                 # Send progress update
-                await manager.send_json({
+                success = await manager.send_json({
                     "type": "progress",
                     "node": node_name,
                     "node_count": node_count,
@@ -345,9 +357,13 @@ async def handle_websocket_invoke(websocket: WebSocket, client_id: str, message:
                     "timestamp": datetime.now().isoformat()
                 }, client_id)
                 
+                if not success:
+                    logger.info(f"Failed to send to {client_id}, stopping stream")
+                    return
+                
                 # Send node output
                 if node_output.get("messages"):
-                    await manager.send_json({
+                    success = await manager.send_json({
                         "type": "node_output",
                         "node": node_name,
                         "message": str(node_output.get("messages", [])[-1].content),
@@ -361,17 +377,20 @@ async def handle_websocket_invoke(websocket: WebSocket, client_id: str, message:
                 # Small delay for better streaming experience
                 await asyncio.sleep(0.1)
         
-        # Send completion message
-        await manager.send_json({
-            "type": "complete",
-            "message": "Request processed successfully",
-            "total_nodes": node_count,
-            "timestamp": datetime.now().isoformat()
-        }, client_id)
+        # Send completion message if client is still connected
+        if client_id in manager.active_connections:
+            await manager.send_json({
+                "type": "complete",
+                "message": "Request processed successfully",
+                "total_nodes": node_count,
+                "timestamp": datetime.now().isoformat()
+            }, client_id)
         
     except Exception as e:
         logger.error(f"Error in WebSocket invocation: {str(e)}")
-        await manager.send_json({
+        # Only send error if client is still connected
+        if client_id in manager.active_connections:
+            await manager.send_json({
             "type": "error",
             "message": str(e),
             "timestamp": datetime.now().isoformat()

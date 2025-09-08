@@ -11,7 +11,9 @@ const ProgressBar = ({ progress, currentAgent, isLoading }) => {
   };
   
   const currentIndex = agents.indexOf(currentAgent);
-  const percentage = progress || ((currentIndex + 1) / agents.length) * 100;
+  // Ensure percentage is always a number
+  const rawPercentage = progress || ((currentIndex + 1) / agents.length) * 100;
+  const percentage = typeof rawPercentage === 'number' ? rawPercentage : Number(rawPercentage) || 0;
   
   return (
     <div className="progress-bar-container">

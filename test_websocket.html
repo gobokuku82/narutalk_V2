@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Test</title>
+</head>
+<body>
+    <h1>WebSocket Connection Test</h1>
+    <div id="status">Connecting...</div>
+    <div id="messages"></div>
+    <input type="text" id="messageInput" placeholder="Enter message">
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        const ws = new WebSocket('ws://localhost:8000/ws/stream');
+        const statusDiv = document.getElementById('status');
+        const messagesDiv = document.getElementById('messages');
+        
+        ws.onopen = () => {
+            console.log('Connected!');
+            statusDiv.textContent = 'Connected ✅';
+            statusDiv.style.color = 'green';
+        };
+        
+        ws.onerror = (error) => {
+            console.error('WebSocket error:', error);
+            statusDiv.textContent = 'Connection Error ❌';
+            statusDiv.style.color = 'red';
+        };
+        
+        ws.onclose = (event) => {
+            console.log('Disconnected:', event.code, event.reason);
+            statusDiv.textContent = `Disconnected (${event.code})`;
+            statusDiv.style.color = 'orange';
+        };
+        
+        ws.onmessage = (event) => {
+            console.log('Received:', event.data);
+            const msg = document.createElement('div');
+            msg.textContent = 'Received: ' + event.data;
+            messagesDiv.appendChild(msg);
+        };
+        
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = {
+                type: 'invoke',
+                input: input.value,
+                thread_id: null
+            };
+            
+            if (ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify(message));
+                console.log('Sent:', message);
+                
+                const msg = document.createElement('div');
+                msg.textContent = 'Sent: ' + JSON.stringify(message);
+                msg.style.color = 'blue';
+                messagesDiv.appendChild(msg);
+                
+                input.value = '';
+            } else {
+                alert('WebSocket is not connected!');
+            }
+        }
+    </script>
+</body>
+</html>
