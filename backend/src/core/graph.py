@@ -118,7 +118,10 @@ class SalesSupportApp:
             },
             "results": {},
             "errors": [],
-            "is_complete": False
+            "is_complete": False,
+            "execution_plan": [],
+            "next_agent": None,
+            "current_step": 0
         }
         
         # Configure execution
@@ -157,7 +160,10 @@ class SalesSupportApp:
             },
             "results": {},
             "errors": [],
-            "is_complete": False
+            "is_complete": False,
+            "execution_plan": [],
+            "next_agent": None,
+            "current_step": 0
         }
         
         # Configure execution
@@ -198,7 +204,10 @@ class SalesSupportApp:
             },
             "results": {},
             "errors": [],
-            "is_complete": False
+            "is_complete": False,
+            "execution_plan": [],
+            "next_agent": None,
+            "current_step": 0
         }
         
         # Configure execution
@@ -238,7 +247,10 @@ class SalesSupportApp:
             },
             "results": {},
             "errors": [],
-            "is_complete": False
+            "is_complete": False,
+            "execution_plan": [],
+            "next_agent": None,
+            "current_step": 0
         }
         
         # Stream events with version="v2" (0.6.6 pattern)

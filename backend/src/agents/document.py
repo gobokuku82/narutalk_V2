@@ -176,7 +176,9 @@ Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
             "results": results_update,
             "context": updated_context,
             # Signal for supervisor to route to compliance
-            "next_agent": "compliance" if requires_compliance else None
+            "next_agent": "compliance" if requires_compliance else None,
+            "execution_plan": state.get("execution_plan", []),
+            "current_step": state.get("current_step", 0)
         }
         
     except Exception as e:
@@ -195,5 +197,8 @@ Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
             "current_agent": "document",
             "progress": [progress_update],
             "errors": state.get("errors", []) + [str(e)],
-            "context": context
+            "context": context,
+            "execution_plan": state.get("execution_plan", []),
+            "current_step": state.get("current_step", 0),
+            "next_agent": None
         }

@@ -58,3 +58,12 @@ class AgentState(MessagesState):
     
     # Completion status
     is_complete: bool
+    
+    # Execution plan for multi-agent coordination
+    execution_plan: list[str]
+    
+    # Next agent to route to
+    next_agent: str | None
+    
+    # Current step in execution plan
+    current_step: int

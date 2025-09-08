@@ -31,6 +31,66 @@ def supervisor_agent(state: AgentState) -> dict:
         "action": "routing_decision"
     }
     
+    # Check if we're continuing an execution plan (agent returning to supervisor)
+    execution_plan = state.get("execution_plan", [])
+    current_step = state.get("current_step", 0)
+    
+    # If an agent just completed and we have more agents in the plan
+    if execution_plan and current_step < len(execution_plan) and state.get("current_agent") != "supervisor":
+        # Move to next step in execution plan
+        next_step = current_step + 1
+        
+        if next_step < len(execution_plan):
+            next_agent = execution_plan[next_step]
+            progress_update["decision"] = next_agent
+            progress_update["reason"] = f"Continuing execution plan: step {next_step + 1}/{len(execution_plan)}"
+            
+            routing_message = AIMessage(
+                content=f"Proceeding to next agent in plan: {next_agent}",
+                metadata={
+                    "agent": "supervisor",
+                    "task_type": next_agent,
+                    "execution_step": next_step
+                }
+            )
+            
+            return {
+                "messages": [routing_message],
+                "current_agent": next_agent,
+                "task_type": next_agent,
+                "task_description": state.get("task_description", ""),
+                "progress": [progress_update],
+                "context": context,
+                "execution_plan": execution_plan,
+                "current_step": next_step,
+                "next_agent": None
+            }
+        else:
+            # All agents completed
+            progress_update["decision"] = "end"
+            progress_update["reason"] = "All agents in execution plan completed"
+            
+            completion_message = AIMessage(
+                content="All planned agents have completed their tasks.",
+                metadata={
+                    "agent": "supervisor",
+                    "task_type": "end",
+                    "completed_agents": execution_plan
+                }
+            )
+            
+            return {
+                "messages": [completion_message],
+                "current_agent": "supervisor",
+                "task_type": "end",
+                "progress": [progress_update],
+                "context": context,
+                "is_complete": True,
+                "execution_plan": execution_plan,
+                "current_step": current_step,
+                "next_agent": None
+            }
+    
     # Check for auto-routing from document to compliance
     if context.get("compliance_ready", False) and not context.get("compliance_checked", False):
         # Auto-route to compliance after document generation
@@ -168,7 +228,9 @@ def supervisor_agent(state: AgentState) -> dict:
             "task_description": user_request,
             "progress": [progress_update],
             "context": updated_context,
-            "execution_plan": planned_agents
+            "execution_plan": planned_agents,
+            "current_step": 0,
+            "next_agent": None
         }
     else:
         # No valid message to process
@@ -187,6 +249,10 @@ def route_by_task_type(state: AgentState) -> str:
     Returns the next node based on task_type
     """
     task_type = state.get("task_type", "end")
+    
+    # Direct mapping for agent names (used in execution plan)
+    if task_type in ["analytics", "search", "document", "compliance"]:
+        return task_type
     
     # Map task types to agent nodes
     routing_map = {

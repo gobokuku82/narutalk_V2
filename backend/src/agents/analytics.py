@@ -194,7 +194,10 @@ def analytics_agent(state: AgentState) -> dict:
             "current_agent": "analytics",
             "progress": [progress_update],
             "results": results_update,
-            "context": updated_context
+            "context": updated_context,
+            "execution_plan": state.get("execution_plan", []),
+            "current_step": state.get("current_step", 0),
+            "next_agent": None
         }
         
     except Exception as e:
@@ -213,5 +216,8 @@ def analytics_agent(state: AgentState) -> dict:
             "current_agent": "analytics",
             "progress": [progress_update],
             "errors": state.get("errors", []) + [str(e)],
-            "context": context
+            "context": context,
+            "execution_plan": state.get("execution_plan", []),
+            "current_step": state.get("current_step", 0),
+            "next_agent": None
         }
