@@ -1,9 +1,12 @@
 import React from 'react';
 
-const ProgressBar = ({ progress, currentAgent, isLoading }) => {
-  const agents = ['supervisor', 'analytics', 'search', 'document', 'compliance'];
+const ProgressBar = ({ progress, currentAgent, isLoading, executionPlan }) => {
+  // Use execution plan if available, otherwise show only current agent
+  const defaultAgents = currentAgent ? [currentAgent] : [];
+  const agents = executionPlan && executionPlan.length > 0 ? executionPlan : defaultAgents;
+  
   const agentLabels = {
-    supervisor: '감독자',
+    supervisor: '계획',
     analytics: '분석',
     search: '검색',
     document: '문서',
@@ -12,8 +15,13 @@ const ProgressBar = ({ progress, currentAgent, isLoading }) => {
   
   const currentIndex = agents.indexOf(currentAgent);
   // Ensure percentage is always a number
-  const rawPercentage = progress || ((currentIndex + 1) / agents.length) * 100;
+  const rawPercentage = progress || ((currentIndex + 1) / Math.max(agents.length, 1)) * 100;
   const percentage = typeof rawPercentage === 'number' ? rawPercentage : Number(rawPercentage) || 0;
+  
+  // Don't render if no agents
+  if (agents.length === 0) {
+    return null;
+  }
   
   return (
     <div className="progress-bar-container">

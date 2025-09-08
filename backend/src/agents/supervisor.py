@@ -85,48 +85,90 @@ def supervisor_agent(state: AgentState) -> dict:
     if last_message and isinstance(last_message, HumanMessage):
         user_request = last_message.content
         
-        # Create routing prompt
+        # Create routing prompt for execution plan
         routing_prompt = f"""
-        Analyze this user request and determine the appropriate task type:
+        Analyze this user request and create an execution plan:
         "{user_request}"
         
-        Available task types:
-        - analyze: For data analysis, metrics, and insights
+        Available agents:
+        - analytics: For data analysis, metrics, KPIs, and insights
         - search: For information retrieval and research
         - document: For report generation and documentation
         - compliance: For regulatory checks and validation
-        - validate: For data validation and verification
-        - end: If the task is complete
         
-        Respond with ONLY the task type keyword.
+        Determine which agents are needed and in what order.
+        Consider that:
+        1. Simple queries may need only one agent
+        2. Complex requests may need multiple agents in sequence
+        3. Document creation often requires compliance check afterwards
+        
+        Respond in JSON format with the execution plan:
+        {{"agents": ["agent1", "agent2"], "reason": "brief explanation"}}
+        
+        Examples:
+        - "지난 분기 매출 분석" → {{"agents": ["analytics"], "reason": "Sales data analysis"}}
+        - "서울대병원 정보 찾고 보고서 작성" → {{"agents": ["search", "document"], "reason": "Search then document"}}
+        - "제안서 작성하고 규정 검토" → {{"agents": ["document", "compliance"], "reason": "Document then compliance"}}
         """
         
         # Get routing decision
         response = llm.invoke([HumanMessage(content=routing_prompt)])
-        task_type = response.content.strip().lower()
         
-        # Validate task type
-        valid_types = ["analyze", "search", "document", "compliance", "validate", "end"]
-        if task_type not in valid_types:
-            task_type = "analyze"  # Default fallback
+        # Parse execution plan
+        try:
+            import re
+            # Extract JSON from response
+            json_match = re.search(r'\{.*\}', response.content, re.DOTALL)
+            if json_match:
+                execution_plan = json.loads(json_match.group())
+            else:
+                # Fallback to simple analytics if parsing fails
+                execution_plan = {"agents": ["analytics"], "reason": "Default fallback"}
+        except:
+            execution_plan = {"agents": ["analytics"], "reason": "Parsing error fallback"}
+        
+        # Get the planned agents and validate them
+        planned_agents = execution_plan.get("agents", ["analytics"])
+        valid_agents = ["analytics", "search", "document", "compliance"]
+        planned_agents = [a for a in planned_agents if a in valid_agents]
+        
+        if not planned_agents:
+            planned_agents = ["analytics"]  # Default fallback
+        
+        # Get the first agent to execute
+        first_agent = planned_agents[0]
+        
+        # Store execution plan in context
+        updated_context = state.get("context", {})
+        updated_context["execution_plan"] = planned_agents
+        updated_context["plan_reason"] = execution_plan.get("reason", "")
+        updated_context["current_step"] = 0
+        updated_context["total_steps"] = len(planned_agents)
         
         # Update progress
-        progress_update["decision"] = task_type
+        progress_update["decision"] = first_agent
+        progress_update["execution_plan"] = planned_agents
         progress_update["request"] = user_request[:100]  # First 100 chars
         
-        # Prepare response message
+        # Prepare response message with execution plan
         routing_message = AIMessage(
-            content=f"Task routed to {task_type} agent for processing.",
-            metadata={"agent": "supervisor", "task_type": task_type}
+            content=f"Execution plan: {' → '.join(planned_agents)}. Starting with {first_agent} agent.",
+            metadata={
+                "agent": "supervisor", 
+                "task_type": first_agent,
+                "execution_plan": planned_agents,
+                "total_steps": len(planned_agents)
+            }
         )
         
         return {
             "messages": [routing_message],
-            "current_agent": task_type,
-            "task_type": task_type,
+            "current_agent": first_agent,
+            "task_type": first_agent,
             "task_description": user_request,
             "progress": [progress_update],
-            "context": state.get("context", {})
+            "context": updated_context,
+            "execution_plan": planned_agents
         }
     else:
         # No valid message to process

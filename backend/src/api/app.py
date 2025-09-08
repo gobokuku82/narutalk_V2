@@ -347,13 +347,31 @@ async def handle_websocket_invoke(websocket: WebSocket, client_id: str, message:
                     logger.info(f"Client {client_id} disconnected, stopping stream")
                     return
                 
+                # Check for execution plan in first node output
+                if node_name == "supervisor" and node_output.get("execution_plan"):
+                    # Send execution plan to frontend
+                    await manager.send_json({
+                        "type": "execution_plan",
+                        "agents": node_output.get("execution_plan"),
+                        "total_steps": len(node_output.get("execution_plan", [])),
+                        "reason": node_output.get("context", {}).get("plan_reason", ""),
+                        "timestamp": datetime.now().isoformat()
+                    }, client_id)
+                
                 # Send progress update
+                context = node_output.get("context", {})
+                execution_plan = context.get("execution_plan", [])
+                current_step = context.get("current_step", 0)
+                
                 success = await manager.send_json({
                     "type": "progress",
                     "node": node_name,
                     "node_count": node_count,
                     "current_agent": node_output.get("current_agent"),
                     "progress": node_output.get("progress"),
+                    "execution_plan": execution_plan,
+                    "current_step": current_step,
+                    "total_steps": len(execution_plan) if execution_plan else 1,
                     "timestamp": datetime.now().isoformat()
                 }, client_id)
                 
