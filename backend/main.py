@@ -37,7 +37,6 @@ def main():
     logger.info(f"📍 Host: {host}:{port}")
     logger.info(f"🔧 LangGraph version: 0.6.6")
     logger.info(f"🔄 Reload: {reload}")
-    logger.info(f"🗄️ Mock DB: {os.getenv('MOCK_DB_ENABLED', 'false')}")
     logger.info("=" * 50)
     
     # Run the FastAPI application

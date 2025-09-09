@@ -12,24 +12,15 @@ response = requests.get(f"{base_url}/health")
 print(f"Status: {response.status_code}")
 print(f"Response: {json.dumps(response.json(), indent=2)}\n")
 
-# Test process endpoint
-print("Testing process endpoint...")
-data = {"message": "고객 정보 검색해줘"}
-response = requests.post(f"{base_url}/api/v1/process", json=data)
+# Test graph invoke endpoint (if needed for testing)
+print("Testing graph invoke endpoint...")
+data = {"input": {"message": "고객 정보 검색해줘"}}
+response = requests.post(f"{base_url}/api/graph/invoke", json=data)
 print(f"Status: {response.status_code}")
 if response.status_code == 200:
     print(f"Response: {json.dumps(response.json(), indent=2, ensure_ascii=False)}")
 else:
     print(f"Error: {response.text}\n")
-
-# Test agents list
-print("\nTesting agents list...")
-response = requests.get(f"{base_url}/api/v1/agents")
-print(f"Status: {response.status_code}")
-if response.status_code == 200:
-    print(f"Available agents: {json.dumps(response.json(), indent=2)}")
-else:
-    print(f"Error: {response.text}")
 
 # Test mock DB
 print("\nTesting mock database...")

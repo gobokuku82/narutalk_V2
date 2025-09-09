@@ -21,8 +21,7 @@ load_dotenv()
 
 # Import our components
 from ..core.graph import SalesSupportApp
-from .routes import router
-from .mock_db import mock_db_router
+# mock_db_router removed - moved to tests/mock_db.py (only used for testing)
 
 # Global app instance
 sales_app = None
@@ -70,8 +69,8 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(router, prefix="/api/v1")
-app.include_router(mock_db_router, prefix="/api/db/mock")
+# router removed - moved to tests/test_routes.py (only used for testing)
+# mock_db_router removed - moved to tests/mock_db.py (only used for testing)
 
 
 # Request/Response Models
@@ -161,7 +160,6 @@ async def root():
         "features": {
             "graph_invoke": True,
             "websocket_streaming": True,
-            "mock_db": os.getenv("MOCK_DB_ENABLED", "false").lower() == "true",
             "error_handling": "comprehensive"
         },
         "timestamp": datetime.now().isoformat()
@@ -510,8 +508,7 @@ async def health_check():
         "langgraph": "0.6.6",
         "services": {
             "graph": "operational" if sales_app else "not_initialized",
-            "websocket": f"{len(manager.active_connections)} active connections",
-            "mock_db": "enabled" if os.getenv("MOCK_DB_ENABLED", "false").lower() == "true" else "disabled"
+            "websocket": f"{len(manager.active_connections)} active connections"
         },
         "agents": ["supervisor", "analytics", "search", "document", "compliance"],
         "timestamp": datetime.now().isoformat()
