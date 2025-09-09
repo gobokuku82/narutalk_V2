@@ -4,7 +4,9 @@
       "WebSearch",
       "Bash(mkdir:*)",
       "Bash(curl:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(python test:*)",
+      "Bash(python -m pytest test_enhanced_system.py::TestEnhancedGraph::test_query_analyzer -v)"
     ],
     "deny": [],
     "ask": []
