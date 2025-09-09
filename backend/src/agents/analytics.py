@@ -17,7 +17,7 @@ from ..tools.analytics_tools import (
     calculate_kpis,
     predict_sales_trend
 )
-from ..state.agent_state import AgentState
+from ..state.enhanced_state import EnhancedAgentState as AgentState
 
 
 def analytics_agent(state: AgentState) -> dict:

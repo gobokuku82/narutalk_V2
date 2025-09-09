@@ -1,3 +1,3 @@
-from .agent_state import AgentState, TaskType
+from .enhanced_state import EnhancedAgentState, create_initial_state
 
-__all__ = ["AgentState", "TaskType"]
+__all__ = ["EnhancedAgentState", "create_initial_state"]

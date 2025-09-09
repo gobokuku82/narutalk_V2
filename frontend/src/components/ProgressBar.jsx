@@ -1,6 +1,6 @@
 import React from 'react';
 
-const ProgressBar = ({ progress, currentAgent, isLoading, executionPlan }) => {
+const ProgressBar = ({ progress, currentAgent, isLoading, executionPlan, isPlanning, loadingMessage }) => {
   // Use execution plan if available, otherwise show only current agent
   const defaultAgents = currentAgent ? [currentAgent] : [];
   const agents = executionPlan && executionPlan.length > 0 ? executionPlan : defaultAgents;
@@ -43,7 +43,7 @@ const ProgressBar = ({ progress, currentAgent, isLoading, executionPlan }) => {
                 {isCompleted ? '✓' : 
                  isActive && isLoading ? (
                    <img 
-                     src="/gif/spinner.gif" 
+                     src={isPlanning ? "/gif/think.gif" : "/gif/spinner.gif"}
                      alt="Loading" 
                      className="step-spinner"
                    />
@@ -72,12 +72,12 @@ const ProgressBar = ({ progress, currentAgent, isLoading, executionPlan }) => {
       {isLoading && currentAgent && (
         <div className="current-task">
           <img 
-            src="/gif/spinner.gif" 
+            src={isPlanning ? "/gif/think.gif" : "/gif/spinner.gif"}
             alt="처리중" 
             className="task-spinner" 
           />
           <span className="task-text">
-            {agentLabels[currentAgent]} 에이전트 처리 중...
+            {isPlanning ? loadingMessage : `${agentLabels[currentAgent]} 에이전트 처리 중...`}
           </span>
         </div>
       )}

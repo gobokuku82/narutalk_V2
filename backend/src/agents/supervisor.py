@@ -6,7 +6,8 @@ from typing import Dict, Any
 from datetime import datetime
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_openai import ChatOpenAI
-from ..state.agent_state import AgentState, TaskType
+from ..state.enhanced_state import EnhancedAgentState as AgentState
+TaskType = str  # Compatibility alias
 import json
 
 

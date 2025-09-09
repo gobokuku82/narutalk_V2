@@ -7,6 +7,7 @@ import { connectWebSocket, sendMessage, disconnectWebSocket } from '../services/
 import '../styles/ChatBot.css';
 
 const ChatBot = () => {
+  // Core states
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [currentAgent, setCurrentAgent] = useState(null);
@@ -14,7 +15,46 @@ const ChatBot = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [threadId, setThreadId] = useState(null);
   const [executionPlan, setExecutionPlan] = useState([]);
+  const [isPlanning, setIsPlanning] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('처리중...');
   const wsRef = useRef(null);
+
+  // Helper functions
+  const isPlanningAgent = (agent) => 
+    ['query_analyzer', 'execution_planner'].includes(agent);
+
+  const getAgentMessage = (agent) => ({
+    query_analyzer: '생각중...',
+    execution_planner: '계획중...',
+    analytics: '데이터 분석 중...',
+    search: '정보 검색 중...',
+    document: '문서 생성 중...',
+    compliance: '규정 검토 중...'
+  }[agent] || '처리중...');
+
+  // Unified state update function
+  const updateAgentState = (agent) => {
+    setCurrentAgent(agent);
+    const planning = isPlanningAgent(agent);
+    setIsPlanning(planning);
+    if (!planning || agent === 'query_analyzer') {
+      // Only set message for non-planning agents or initial planning
+      setLoadingMessage(getAgentMessage(agent));
+    }
+  };
+
+  // Effect for alternating planning messages
+  useEffect(() => {
+    if (isPlanning && isLoading) {
+      const messages = ['생각중...', '계획중...'];
+      let index = 0;
+      const interval = setInterval(() => {
+        setLoadingMessage(messages[index]);
+        index = (index + 1) % messages.length;
+      }, 1500);
+      return () => clearInterval(interval);
+    }
+  }, [isPlanning, isLoading]);
 
   useEffect(() => {
     let isCleanup = false;
@@ -26,6 +66,7 @@ const ChatBot = () => {
       if (data.type === 'execution_plan') {
         // Handle execution plan from backend
         setExecutionPlan(data.agents || []);
+        setIsPlanning(false);
         setMessages(prev => [...prev, {
           id: Date.now(),
           content: `실행 계획: ${(data.agents || []).join(' → ')}`,
@@ -33,12 +74,13 @@ const ChatBot = () => {
           timestamp: new Date().toLocaleTimeString()
         }]);
       } else if (data.type === 'agent_update') {
-        setCurrentAgent(data.agent);
+        const agent = data.agent;
+        updateAgentState(agent);
         setProgress(data.progress || 0);
         
         const newMessage = {
           id: Date.now(),
-          agent: data.agent,
+          agent: agent,
           content: data.message || '',
           data: data.data || {},
           timestamp: new Date().toLocaleTimeString(),
@@ -51,6 +93,7 @@ const ChatBot = () => {
           setIsLoading(false);
           setCurrentAgent(null);
           setProgress(100);
+          setIsPlanning(false);
         }
       } else if (data.type === 'error') {
         setMessages(prev => [...prev, {
@@ -61,18 +104,24 @@ const ChatBot = () => {
         }]);
         setIsLoading(false);
         setCurrentAgent(null);
+        setIsPlanning(false);
       } else if (data.type === 'progress') {
         // Handle progress update with execution plan
         if (data.execution_plan && data.execution_plan.length > 0) {
           setExecutionPlan(data.execution_plan);
         }
-        setCurrentAgent(data.current_agent || data.node);
+        const agent = data.current_agent || data.node;
+        if (agent) {
+          updateAgentState(agent);
+        }
+        
         const stepProgress = ((data.current_step + 1) / data.total_steps) * 100;
         setProgress(stepProgress || data.progress || 0);
       } else if (data.type === 'complete') {
         setIsLoading(false);
         setCurrentAgent(null);
         setProgress(100);
+        setIsPlanning(false);
         if (data.thread_id) {
           setThreadId(data.thread_id);
         }
@@ -107,8 +156,6 @@ const ChatBot = () => {
     return () => {
       console.log('ChatBot cleanup triggered');
       isCleanup = true;
-      // Don't disconnect immediately - only on actual unmount
-      // This prevents premature disconnection during StrictMode double-render
     };
   }, []);
 
@@ -135,7 +182,9 @@ const ChatBot = () => {
     setIsLoading(true);
     setProgress(0);
     setCurrentAgent(null);
-    setExecutionPlan([]);  // Reset execution plan for new query
+    setExecutionPlan([]);
+    setIsPlanning(true);  // Start with planning phase
+    setLoadingMessage('생각중...');
     
     sendMessage({
       message: text,
@@ -154,13 +203,6 @@ const ChatBot = () => {
             alt="Naru" 
             className="naru-character"
           />
-          {isLoading && (
-            <img 
-              src="/gif/spinner.gif" 
-              alt="Loading" 
-              className="character-spinner"
-            />
-          )}
         </div>
         
         <div className="chat-content">
@@ -172,6 +214,8 @@ const ChatBot = () => {
               currentAgent={currentAgent}
               isLoading={isLoading}
               executionPlan={executionPlan}
+              isPlanning={isPlanning}
+              loadingMessage={loadingMessage}
             />
           )}
           

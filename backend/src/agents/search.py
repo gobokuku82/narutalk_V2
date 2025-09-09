@@ -19,7 +19,7 @@ from ..tools.search_tools import (
     merge_search_results,
     semantic_search
 )
-from ..state.agent_state import AgentState
+from ..state.enhanced_state import EnhancedAgentState as AgentState
 
 
 def search_agent(state: AgentState) -> dict:

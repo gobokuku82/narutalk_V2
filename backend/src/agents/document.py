@@ -10,7 +10,7 @@ from langchain_core.messages import AIMessage, SystemMessage, HumanMessage
 from langchain_openai import ChatOpenAI
 from loguru import logger
 
-from ..state.agent_state import AgentState
+from ..state.enhanced_state import EnhancedAgentState as AgentState
 from ..tools.document_tools import (
     parse_natural_language,
     natural_language_to_document,

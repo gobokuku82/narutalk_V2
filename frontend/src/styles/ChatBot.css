@@ -657,6 +657,78 @@
   50% { transform: translateY(-5px); }
 }
 
+/* Logo Styles */
+.header-logo {
+  height: 40px;
+  width: auto;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+  filter: brightness(0) invert(1); /* Make logo white */
+}
+
+.chat-title {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+/* Loading Container */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  animation: fadeIn 0.5s ease-in;
+}
+
+.loading-text {
+  font-size: 1rem;
+  color: #666;
+  font-weight: 500;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+/* Step Circle Active State (without spinner) */
+.step.active .step-circle {
+  background: #667eea;
+  color: white;
+  font-weight: bold;
+  animation: stepPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes stepPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+/* Current Task Style Update */
+.current-task {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background: rgba(102, 126, 234, 0.1);
+  border-radius: 20px;
+}
+
+.task-text {
+  color: #667eea;
+  font-weight: 500;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .chatbot-container {
@@ -673,5 +745,9 @@
   
   .user-message {
     max-width: 85%;
+  }
+  
+  .header-logo {
+    height: 32px;
   }
 }

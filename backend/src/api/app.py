@@ -19,12 +19,13 @@ import traceback
 # Load environment variables
 load_dotenv()
 
-# Import our components
-from ..core.graph import SalesSupportApp
+# Import our enhanced graph components
+from ..graph.enhanced_graph import create_enhanced_graph, execute_enhanced_query
+from ..state.enhanced_state import create_initial_state
 # mock_db_router removed - moved to tests/mock_db.py (only used for testing)
 
-# Global app instance
-sales_app = None
+# Global enhanced graph instance
+enhanced_graph = None
 
 
 @asynccontextmanager
@@ -32,16 +33,15 @@ async def lifespan(app: FastAPI):
     """
     Lifespan context manager for FastAPI
     """
-    global sales_app
+    global enhanced_graph
     
     # Startup
-    logger.info("🚀 Starting Enhanced Sales Support AI Application...")
+    logger.info("🚀 Starting Enhanced Sales Support AI Application with Query Analyzer...")
     
-    # Initialize the LangGraph application
-    use_sqlite = os.getenv("USE_SQLITE_CHECKPOINTER", "false").lower() == "true"
-    sales_app = SalesSupportApp(use_sqlite=use_sqlite)
+    # Initialize the Enhanced LangGraph
+    enhanced_graph = create_enhanced_graph()
     
-    logger.info(f"✅ LangGraph 0.6.6 initialized with {'SQLite' if use_sqlite else 'Memory'} checkpointer")
+    logger.info("✅ Enhanced LangGraph 0.6.6 initialized with Query Analyzer and Dynamic Router")
     
     yield
     
@@ -175,8 +175,8 @@ async def invoke_graph(request: GraphInvokeRequest):
     start_time = datetime.now()
     
     try:
-        if not sales_app:
-            raise HTTPException(status_code=503, detail="Service not initialized")
+        if not enhanced_graph:
+            raise HTTPException(status_code=503, detail="Enhanced graph not initialized")
         
         # Prepare input
         if "messages" in request.input:
@@ -197,10 +197,12 @@ async def invoke_graph(request: GraphInvokeRequest):
                 media_type="text/event-stream"
             )
         else:
-            # Regular invocation
-            result = await sales_app.aprocess_request(
-                user_input=user_input,
-                thread_id=request.thread_id
+            # Regular invocation with enhanced graph
+            config = {"configurable": {"thread_id": request.thread_id or "default"}}
+            result = await execute_enhanced_query(
+                enhanced_graph,
+                query=user_input,
+                config=config
             )
             
             # Calculate execution time
@@ -230,7 +232,14 @@ async def stream_graph_execution(user_input: str, thread_id: Optional[str] = Non
     Stream graph execution as Server-Sent Events
     """
     try:
-        async for output in sales_app.stream_request(user_input, thread_id):
+        # Stream with enhanced graph
+        config = {"configurable": {"thread_id": thread_id or "default"}}
+        initial_state = create_initial_state()
+        from langchain_core.messages import HumanMessage
+        initial_state["messages"] = [HumanMessage(content=user_input)]
+        initial_state["raw_query"] = user_input
+        
+        async for output in enhanced_graph.astream(initial_state, config):
             for node_name, node_output in output.items():
                 event = {
                     "type": "node_output",
@@ -334,9 +343,15 @@ async def handle_websocket_invoke(websocket: WebSocket, client_id: str, message:
     }, client_id)
     
     try:
-        # Stream the graph execution with progress updates
+        # Stream the enhanced graph execution with progress updates
         node_count = 0
-        async for output in sales_app.stream_request(user_input, thread_id):
+        config = {"configurable": {"thread_id": thread_id or "default"}}
+        initial_state = create_initial_state()
+        from langchain_core.messages import HumanMessage
+        initial_state["messages"] = [HumanMessage(content=user_input)]
+        initial_state["raw_query"] = user_input
+        
+        async for output in enhanced_graph.astream(initial_state, config):
             for node_name, node_output in output.items():
                 node_count += 1
                 
@@ -345,14 +360,16 @@ async def handle_websocket_invoke(websocket: WebSocket, client_id: str, message:
                     logger.info(f"Client {client_id} disconnected, stopping stream")
                     return
                 
-                # Check for execution plan in first node output
-                if node_name == "supervisor" and node_output.get("execution_plan"):
+                # Check for execution plan from query_analyzer or execution_planner
+                if node_name in ["query_analyzer", "execution_planner"] and node_output.get("execution_plan"):
                     # Send execution plan to frontend
+                    plan = node_output.get("execution_plan", {})
+                    agents = plan.get("sequential_tasks", []) + plan.get("parallel_tasks", [])
                     await manager.send_json({
                         "type": "execution_plan",
-                        "agents": node_output.get("execution_plan"),
-                        "total_steps": len(node_output.get("execution_plan", [])),
-                        "reason": node_output.get("context", {}).get("plan_reason", ""),
+                        "agents": agents,
+                        "total_steps": len(agents),
+                        "reason": plan.get("reasoning", ""),
                         "timestamp": datetime.now().isoformat()
                     }, client_id)
                 
@@ -422,7 +439,13 @@ async def handle_websocket_stream_events(websocket: WebSocket, client_id: str, m
     
     try:
         event_count = 0
-        async for event in sales_app.stream_events(user_input, thread_id):
+        config = {"configurable": {"thread_id": thread_id or "default"}}
+        initial_state = create_initial_state()
+        from langchain_core.messages import HumanMessage
+        initial_state["messages"] = [HumanMessage(content=user_input)]
+        initial_state["raw_query"] = user_input
+        
+        async for event in enhanced_graph.astream_events(initial_state, version="v2", config=config):
             event_count += 1
             
             # Send each event with enhanced metadata
