@@ -5,7 +5,7 @@ Integrates Query Analyzer, Execution Planner, and Dynamic Router
 from typing import Dict, Any, Literal
 import os
 from langgraph.graph import StateGraph, START, END
-from langgraph.checkpoint.sqlite import SqliteSaver
+from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from langgraph.prebuilt import ToolNode, tools_condition
 
 # Import enhanced state
@@ -28,7 +28,7 @@ from ..tools.search_tools import search_internal_db, search_vector_db
 from ..tools.analytics_tools import analyze_sales_trend, calculate_kpis
 
 
-def create_enhanced_graph():
+async def create_enhanced_graph():
     """
     Create the enhanced LangGraph with advanced query analysis
     
@@ -171,15 +171,20 @@ def create_enhanced_graph():
     # Ensure directory exists
     os.makedirs(os.path.dirname(db_path), exist_ok=True)
     
-    # Create SqliteSaver using sqlite3 connection (as per manual)
-    import sqlite3
-    conn = sqlite3.connect(db_path, check_same_thread=False)
-    checkpointer = SqliteSaver(conn)
+    # Create AsyncSqliteSaver with persistent connection
+    # We need to create the saver without using context manager for long-lived graphs
+    import aiosqlite
+    conn = await aiosqlite.connect(db_path)
+    checkpointer = AsyncSqliteSaver(conn)
     
-    return graph.compile(checkpointer=checkpointer)
+    compiled_graph = graph.compile(checkpointer=checkpointer)
+    
+    # Store connection reference for cleanup if needed
+    compiled_graph._db_connection = conn
+    return compiled_graph
 
 
-def create_simple_enhanced_graph():
+async def create_simple_enhanced_graph():
     """
     Create a simplified version for testing
     User → Query Analyzer → Execution Planner → Agents
@@ -221,7 +226,7 @@ def create_simple_enhanced_graph():
     graph.add_edge("search", END)
     graph.add_edge("document", END)
     
-    # Use SqliteSaver for simple graph too
+    # Use AsyncSqliteSaver for simple graph too
     db_path = os.path.join(
         os.path.dirname(__file__), "..", "..", "..",
         "database", "checkpoints", "simple_enhanced_graph.db"
@@ -229,12 +234,17 @@ def create_simple_enhanced_graph():
     db_path = os.path.abspath(db_path)
     os.makedirs(os.path.dirname(db_path), exist_ok=True)
     
-    # Create SqliteSaver using sqlite3 connection (as per manual)
-    import sqlite3
-    conn = sqlite3.connect(db_path, check_same_thread=False)
-    checkpointer = SqliteSaver(conn)
+    # Create AsyncSqliteSaver with persistent connection
+    # We need to create the saver without using context manager for long-lived graphs
+    import aiosqlite
+    conn = await aiosqlite.connect(db_path)
+    checkpointer = AsyncSqliteSaver(conn)
     
-    return graph.compile(checkpointer=checkpointer)
+    compiled_graph = graph.compile(checkpointer=checkpointer)
+    
+    # Store connection reference for cleanup if needed
+    compiled_graph._db_connection = conn
+    return compiled_graph
 
 
 # Utility functions for graph management

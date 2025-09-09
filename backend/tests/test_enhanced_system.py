@@ -26,7 +26,13 @@ class TestEnhancedGraph:
     @pytest.fixture
     def graph(self):
         """Create enhanced graph instance"""
-        return create_enhanced_graph()
+        import asyncio
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            return loop.run_until_complete(create_enhanced_graph())
+        finally:
+            loop.close()
     
     def test_graph_creation(self, graph):
         """Test that enhanced graph is created successfully"""
@@ -167,7 +173,8 @@ def run_basic_test():
         # Test 1: Graph Creation
         print("Test 1: Creating enhanced graph...")
         from src.graph.enhanced_graph import create_enhanced_graph
-        graph = create_enhanced_graph()
+        import asyncio
+        graph = asyncio.run(create_enhanced_graph())
         print("[OK] Graph created successfully\n")
         
         # Test 2: State Creation

@@ -38,10 +38,10 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("🚀 Starting Enhanced Sales Support AI Application with Query Analyzer...")
     
-    # Initialize the Enhanced LangGraph
-    enhanced_graph = create_enhanced_graph()
+    # Initialize the Enhanced LangGraph (async)
+    enhanced_graph = await create_enhanced_graph()
     
-    logger.info("✅ Enhanced LangGraph 0.6.6 initialized with Query Analyzer and Dynamic Router")
+    logger.info("✅ Enhanced LangGraph 0.6.6 initialized with AsyncSqliteSaver and Dynamic Router")
     
     yield
     

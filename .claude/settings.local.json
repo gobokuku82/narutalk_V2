@@ -6,7 +6,8 @@
       "Bash(curl:*)",
       "Bash(tree:*)",
       "Bash(python test:*)",
-      "Bash(python -m pytest test_enhanced_system.py::TestEnhancedGraph::test_query_analyzer -v)"
+      "Bash(python -m pytest test_enhanced_system.py::TestEnhancedGraph::test_query_analyzer -v)",
+      "Bash(python:*)"
     ],
     "deny": [],
     "ask": []
