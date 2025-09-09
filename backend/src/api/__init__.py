@@ -1,3 +1,3 @@
-from .app import app, sales_app
+from .app import app, enhanced_graph
 
-__all__ = ["app", "sales_app"]
+__all__ = ["app", "enhanced_graph"]
